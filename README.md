@@ -9,5 +9,5 @@ Python file deduplication utility with an AngularJS front-end
 |ui-grid | grid ui | http://ui-grid.info | 3.1.1 |
 |bootstrap|CSS formatting done easy|http://getbootstrap.com|3.3.6|
 
-## Credits
+## credits
 Inspired by [DuplicateFiles](https://github.com/djruesch/Herramientas).
