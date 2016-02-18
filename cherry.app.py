@@ -83,7 +83,8 @@ class Digest(object):
     # calculate the sha256 digests of the given paths
     for p in paths:
       hash = utils.digest(p)
-      result.append({"hash": hash, "path": p});
+      size = os.stat(p).st_size
+      result.append({"hash": hash, "path": p, "size": size});
 
     return result
 

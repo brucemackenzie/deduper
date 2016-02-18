@@ -16,6 +16,35 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
     return d.toISOString();
   };
 })
+.filter('asUnit', function() {
+  return function(input) {
+    if (!input)
+    {
+      return 0;
+    }
+
+    var scales = [
+      {val: 1, max: Math.pow(2,10)-1, unit: 'byte'},
+      {val: Math.pow(2,10), max: Math.pow(2,20)-1, unit: 'kB'},
+      {val: Math.pow(2,20), max: Math.pow(2,30)-1, unit: 'MB'},
+      {val: Math.pow(2,30), max: Math.pow(2,40)-1, unit: 'GB'},
+      {val: Math.pow(2,40), max: Math.pow(2,50)-1, unit: 'TB'},
+    ];
+
+    var scale = scales[scales.length - 1];
+    for (var i = 0; i < scales.length; i++)
+    {
+      if (input < scales[i].max)
+      {
+        scale = scales[i];
+        break;
+      }
+    }
+
+    // return appropriate string
+    return (input/scale.val).toFixed(1) + scale.unit;;
+  };
+})
 .controller('View1Ctrl', ['$rootScope', '$scope', 'uiGridConstants', '_',
   'stateModel', 'assetsModel', 'digestsModel',
   function ($rootScope, $scope, uiGridConstants, _, stateModel, assetsModel, digestsModel) {
@@ -25,15 +54,32 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
     $scope.assetsModel = assetsModel;
     $scope.digestsModel = digestsModel;
 
+    // cached data
     $scope.reset = function() {
       $scope.stateModel.current.transient.busy = false;
       $scope.stateModel.current.transient.cancel = false;
+
       $scope.duplicates = [];
+
       $scope.digestsModel.reset();
       $scope.assetsModel.reset();
-      $scope.msg = 'no messages';
+
+      $scope.analysis = {
+        duplicateCount: 0,
+        duplicateBytes: 0,
+        percentDuplicated: 0
+      };
     };
     $scope.reset();
+
+    // persist current ui state
+    $scope.$watch('stateModel.current.accordion[0].open', function(isOpen) {
+        $scope.stateModel.save_state();
+      });
+
+    $scope.$watch('stateModel.current.accordion[1].open', function(isOpen) {
+        $scope.stateModel.save_state();
+      });
 
     $scope.resetButtonClicked = function() {
       $scope.reset();
@@ -48,16 +94,23 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
       else
       {
         $scope.reset();
-        $scope.refreshAssets();
+
+        // open the files accordion
+        $scope.stateModel.current.accordion[1].open = true;
+
+        $scope.showMsg('scanning...');
+
+        // search for files
+        $scope.refreshAssets(function() {
+            $scope.stateModel.current.transient.busy = false;
+            $scope.stateModel.current.transient.cancel = false;
+            $scope.showMsg('scan complete');
+          });
       }
     };
 
     // trigger an update of the assets model
-    $scope.refreshAssets = function () {
-
-      // open the files accordion
-      $scope.stateModel.current.accordion[1].open = true;
-
+    $scope.refreshAssets = function (cb) {
       var folders = $scope.stateModel.get_enabled_folders();
       if (folders.length)
       {
@@ -75,10 +128,11 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
               });
             }
           },
-          function(err) {
-            $scope.stateModel.current.transient.busy = false;
-            $scope.stateModel.current.transient.cancel = false;
-          });
+          cb);
+      }
+      else
+      {
+        cb(null);
       }
     };
 
@@ -91,32 +145,40 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
     $scope.$on('digests:updated', function (event, data) {
 
       // merge digest into duplicates array
-      var merge = function (digested) {
+      var merge = function (duplicate) {
         var index = $scope.duplicates.findIndex(function (item, i) {
-          return (item.hash == digested.hash);
+          return (item.hash == duplicate.hash);
         });
 
+        var size = $scope.digestsModel.path_size_map[duplicate.paths[0]];
         if (index >= 0)
         {
           // already exists so merge
-          digested.paths.forEach(function(new_path) {
+          duplicate.paths.forEach(function(new_path) {
             var path_index = $scope.duplicates[index].paths.indexOf(new_path);
             if (path_index < 0)
             {
               // not found so insert
               $scope.duplicates[index].paths.push(new_path);
+              $scope.analysis.duplicateCount += 1;
+              $scope.analysis.duplicateBytes += size;
             }
           });
         }
         else
         {
           // new item
-          $scope.duplicates.push(digested);
+          $scope.duplicates.push(duplicate);
+          $scope.analysis.duplicateCount += 1;
+          $scope.analysis.duplicateBytes += size;
         }
+
+        // update stats
+        $scope.analysis.percentDuplicated = Math.round(($scope.analysis.duplicateBytes / $scope.assetsModel.totalBytes) * 100);
       };
 
       // update duplicates array with new information
-      for (var d in $scope.digestsModel.digests)
+      for (var d in $scope.digestsModel.digest_path_map)
       {
         if ($scope.stateModel.current.transient.cancel)
         {
@@ -124,12 +186,16 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
         }
 
         // any duplicates?
-        if ($scope.digestsModel.digests[d].length > 1)
+        if ($scope.digestsModel.digest_path_map[d].length > 1)
         {
-          merge({ hash: d, paths: $scope.digestsModel.digests[d] });
+          merge({ hash: d, paths: $scope.digestsModel.digest_path_map[d]});
         }
       }
     });
+
+    $scope.showMsg = function(msg) {
+      $scope.msg = msg;
+    };
 
     $scope.$on('error', function (event, data) {
       $scope.msg = data;
@@ -236,5 +302,6 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
 
     // restore UI state from local storage
     stateModel.load_state();
+    $scope.showMsg('Optionally adjust your search settings, then press Scan');
   }
 ]);

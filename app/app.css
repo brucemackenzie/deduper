@@ -55,6 +55,7 @@ html, body {
 .otherButton {
   margin-top: 10px;
   margin-right: 15px;
+  margin-bottom: 10px;
 }
 
 .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }

@@ -1,83 +1,108 @@
 <div>
   <div class="container-fluid">
     <div class="row">
-      <div class="col-md-6">
+      <div class="col-md-12">
         <div class="row">
-          <div class="col-md-8">
-            <h1>Deduper File duplication tool</h1>
-          </div>
-          <div class="col-md-4">
+          <div class="col-md-6">
             <div class="row">
-            <button type="button" class="btn scanButton btn-lg pull-right"
-              ng-class="stateModel.current.transient.busy ? 'btn-danger':'btn-primary'"
-              ng-click="actionButtonClicked()">{{ stateModel.current.transient.busy ? 'Cancel' : 'Scan' }}</button>
+              <div class="col-md-8">
+                <h1>Deduper</h1>
+                <h3>File de-duplication tool</h3>
+              </div>
+              <div class="col-md-4">
+                <div class="row">
+                <button type="button" class="btn scanButton btn-lg pull-right"
+                  ng-class="stateModel.current.transient.busy ? 'btn-danger':'btn-primary'"
+                  ng-click="actionButtonClicked()">{{ stateModel.current.transient.busy ? 'Cancel' : 'Scan' }}</button>
+                </div>
+                <div class="row">
+                  <button type="button" class="btn otherButton btn-lg btn-warning pull-right"
+                   ng-click="resetButtonClicked()"
+                   ng-disabled="stateModel.current.transient.busy">Reset</button>
+                </div>
+              </div>
             </div>
             <div class="row">
-              <button type="button" class="btn otherButton btn-lg btn-warning pull-right"
-               ng-click="resetButtonClicked()"
-               ng-disabled="stateModel.current.transient.busy">Reset</button>
+              <div class="col-md-12" ng-hide="msg == ''">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                      <p class="lead"><i>{{msg}}</i></p>
+                    </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <uib-accordion close-others="false">
+                    <uib-accordion-group is-open="stateModel.current.accordion[0].open">
+                      <uib-accordion-heading>
+                        <i class="glyphicon" ng-class="{'glyphicon-chevron-up': stateModel.current.accordion[0].open, 'glyphicon-chevron-down': !stateModel.current.accordion[0].open}"></i>&nbsp;Search Settings
+                      </uib-accordion-heading>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="panel panel-default">
+                            <!-- Default panel contents -->
+                            <div class="panel-heading">File Types</div>
+                            <div class="panel-body">
+                              <div ui-grid-selection id="grid10" ui-grid="gridOptionsExt" class="extGrid"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="panel panel-default">
+                            <div class="panel-heading">Search Folders</div>
+                            <div class="panel-body">
+                                <div ui-grid-selection id="grid3" ui-grid="gridOptionsFolders" class="folderGrid"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </uib-accordion-group>
+                    <uib-accordion-group is-open="stateModel.current.accordion[1].open">
+                      <uib-accordion-heading>
+                        <i class="glyphicon" ng-class="{'glyphicon-chevron-up': stateModel.current.accordion[1].open, 'glyphicon-chevron-down': !stateModel.current.accordion[1].open}"></i>&nbsp;Files Found
+                      </uib-accordion-heading>
+                      <div class="row">
+                        <div class="col-md-12">
+                          <div id="grid2" ui-grid="gridOptionsAssets" class="myGrid" ui-grid-resize-columns></div>
+                        </div>
+                      </div>
+                    </uib-accordion-group>
+                </uib-accordion>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="panel panel-default">
+              <div class="panel-heading">Findings</div>
+              <div class="panel-body">
+                <div class="row">
+                  <div class="col-md-12">
+                    <table class="table">
+                       <tbody>
+                        <tr><td>files:</td><td>{{assetsModel.data.length}} <span ng-hide="assetsModel.totalBytes < 1">({{assetsModel.totalBytes | asUnit}})</span></td></tr>
+                        <tr><td>analyzed:</td><td>{{digestsModel.digestedCount}}</td></tr>
+                        <tr><td>duplicates:</td><td>{{analysis.duplicateCount}}</td></tr>
+                        <tr><td>duplicated data:</td><td>{{analysis.duplicateBytes | asUnit}} <span ng-hide="analysis.percentDuplicated < 1">({{analysis.percentDuplicated}}%)</span></td></tr>
+                      </tbody>
+                    </table>
+                    <uib-progress ng-hide="assetsModel.data.length == 0">
+                      <uib-bar value="analysis.percentDuplicated" type="{{analysis.percentDuplicated > 50 ? 'danger':'warning' }}">
+                        <span ng-hide="analysis.percentDuplicated < 5">{{analysis.percentDuplicated}}%</span></uib-bar>
+                      <uib-bar value="100 - analysis.percentDuplicated" type="success">
+                        <span ng-hide="100 - analysis.percentDuplicated < 5"></span></uib-bar>
+                    </uib-progress>
+                  </div>
+                </div>
+                <div class="row" ng-hide="analysis.duplicateCount == 0">
+                  <div class="col-md-12">
+                    <div id="grid4" ui-grid="gridOptionsDuplicates" class="myGrid"></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="col-md-6">
-        <h2>Messages</h2>
-        <div class="well">{{msg}}</div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-6">
-        <uib-accordion close-others="false">
-            <uib-accordion-group is-open="stateModel.current.accordion[0].open">
-              <uib-accordion-heading>
-                <i class="glyphicon" ng-class="{'glyphicon-chevron-up': stateModel.current.accordion[0].open, 'glyphicon-chevron-down': !stateModel.current.accordion[0].open}"></i>&nbsp;Search Settings
-              </uib-accordion-heading>
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="panel panel-default">
-                    <!-- Default panel contents -->
-                    <div class="panel-heading">File Types</div>
-                    <div class="panel-body">
-                      <div ui-grid-selection id="grid10" ui-grid="gridOptionsExt" class="extGrid"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="panel panel-default">
-                    <div class="panel-heading">Search Folders</div>
-                    <div class="panel-body">
-                        <div ui-grid-selection id="grid3" ui-grid="gridOptionsFolders" class="folderGrid"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </uib-accordion-group>
-            <uib-accordion-group is-open="stateModel.current.accordion[1].open">
-              <uib-accordion-heading>
-                <i class="glyphicon" ng-class="{'glyphicon-chevron-up': stateModel.current.accordion[1].open, 'glyphicon-chevron-down': !stateModel.current.accordion[1].open}"></i>&nbsp;Files Found
-              </uib-accordion-heading>
-              <div class="row">
-                <div class="col-md-12">
-                  <div id="grid2" ui-grid="gridOptionsAssets" class="myGrid" ui-grid-resize-columns></div>
-                </div>
-              </div>
-            </uib-accordion-group>
-        </uib-accordion>
-      </div>
-      <div class="col-md-6">
-        <div class="panel panel-default">
-          <div class="panel-heading">Findings</div>
-          <div class="panel-body">
-            <div class="row">
-              <div class="col-md-4">
-                <p>files: {{assetsModel.data.length}}</p>
-                <p>duplicates: {{duplicates.length}}</p>
-              </div>
-              <div class="col-md-12">
-                <div id="grid4" ui-grid="gridOptionsDuplicates" class="myGrid"></div>
-              </div>
-            </div>
-          </div>
       </div>
     </div>
   </div>

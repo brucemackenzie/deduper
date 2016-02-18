@@ -3,26 +3,40 @@
 angular.module('myApp.view1')
 .service("digestsModel", ['$rootScope', '$http', '$timeout', '_', 'assetsModel',
   function ($rootScope, $http, $timeout, _, assetsModel) {
-    this.digests = {};
     var this_ = this;
 
-    this.reset = function () {
-      this.digests = {};
+    this_.reset = function () {
+      this_.digest_path_map = {};
+      this_.path_size_map = {};
+      this_.digestedCount = 0;
     };
+    this_.reset();
 
     var getDigests = function (paths) {
       $http.post("/digest", paths)
         .success(function (data, status, headers, config) {
           // merge with existing digests
           data.forEach(function (item) {
-            if (!this_.digests[item.hash])
+            this_.digestedCount += 1;
+            if (!this_.digest_path_map[item.hash])
             {
-              this_.digests[item.hash] = [];
+              this_.digest_path_map[item.hash] = [];
             }
-            this_.digests[item.hash].push(item.path);
+            this_.digest_path_map[item.hash].push(item.path);
+
+            // keep track of sizes too for analysis
+            if (!this_.path_size_map[item.path])
+            {
+              this_.path_size_map[item.path] = item.size;
+            }
+            else
+            {
+              // why are we calculating the digest twice?
+              $rootScope.$broadcast('error', 'calculating digest twice for path: ' + item.path);
+            }
           });
 
-          $rootScope.$broadcast('digests:updated', this_.digests);
+          $rootScope.$broadcast('digests:updated', this_.digest_path_map);
         })
         .error(function (data, status, headers, config) {
           $rootScope.$broadcast('error', status);

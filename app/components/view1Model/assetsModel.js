@@ -5,18 +5,19 @@ angular.module('myApp.view1')
   function ($rootScope, $http, $timeout, _, stateModel) {
     var this_ = this;
 
-    // cached data
-    this.data = [];
-    this.sizes = {};
-    this.stateModel = stateModel;
+    // model
+    this_.stateModel = stateModel;
 
-    this.reset = function() {
+    // cached data
+    this_.reset = function() {
       this_.data = [];
       this_.sizes = {};
+      this_.totalBytes = 0;
     };
+    this_.reset(); // set defaults
 
     // get the known file state
-    this.update = function (root, callback) {
+    this_.update = function (root, callback) {
       var more = function (id, cb) {
         $http.get('/scan?iteratorid=' + id).then(
           function success(result) {
@@ -25,6 +26,9 @@ angular.module('myApp.view1')
             if (result.data.length)
             {
               result.data.forEach(function (item) {
+                // accumulate stats
+                this_.totalBytes += item.size;
+
                 // add to sizes dictionary to easily spot duplicates
                 if (!this_.sizes[item.size])
                 {
@@ -38,7 +42,7 @@ angular.module('myApp.view1')
 
                 // add to main data set
                 if (!_.find(this_.data, function(x) {
-                  // integer compare should be faster than string?
+                  // integer compare faster than string so do first
                   return item.size == x.size && item.path == x.path;
                 }))
                 {
@@ -69,7 +73,7 @@ angular.module('myApp.view1')
           });
       };
 
-      // incrementally update the data
+      // incrementally obtain more file details
       var postUrl = '/scan?root=' + root;
       $http.post(postUrl, this_.stateModel.get_enabled_extensions()).then(
         function success(id_result) {
@@ -87,7 +91,6 @@ angular.module('myApp.view1')
         function error(err) {
           callback(err);
         });
-
     };
   }
 ])
