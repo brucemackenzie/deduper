@@ -1,6 +1,17 @@
 # deduper (**work in progress**)
 Python file deduplication utility with an AngularJS front-end
 
+## TODO
+|feature|details|expected effort|
+|-------|-------|-------|
+|Custom paths|Add/Remove/Edit folder search paths|medium|
+|Thumbnails|Better UI representation for duplicates|medium|
+|Unit Tests|Validate duplicate detection and stats|medium|
+|e2e Tests|Validate UI functionality|medium|
+|Dedup 1: delete|Support actually deleting all duplicates|medium|
+|Dedup 2: reorg|Support copying all files to a new folder structure based on dates|medium|
+|Dedup 3: quarantine|Support moving only duplicates to quarantine folder|medium|
+
 ## dependencies
 |library| usage | site | version
 |-------|------|-------|---------|
