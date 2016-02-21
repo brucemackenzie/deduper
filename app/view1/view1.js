@@ -1,7 +1,8 @@
 'use strict';
 
 angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
-  'ui.grid.resizeColumns', 'ui.grid', 'underscore', 'ui.grid.selection'])
+  'ui.grid.resizeColumns', 'ui.grid', 'underscore', 'ui.grid.selection',
+  'ui.grid.edit', 'ui.grid.cellNav'])
 .config(['$routeProvider', function($routeProvider) {
   $routeProvider.when('/view1', {
     templateUrl: 'view1/view1.html',
@@ -45,9 +46,11 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
     return (input/scale.val).toFixed(1) + scale.unit;;
   };
 })
-.controller('View1Ctrl', ['$rootScope', '$scope', 'uiGridConstants', '_',
+.controller('View1Ctrl', ['$rootScope', '$scope', '$timeout',
+  'uiGridConstants', '_',
   'stateModel', 'assetsModel', 'digestsModel',
-  function ($rootScope, $scope, uiGridConstants, _, stateModel, assetsModel, digestsModel) {
+  function ($rootScope, $scope, $timeout, uiGridConstants, _,
+    stateModel, assetsModel, digestsModel) {
 
     // transient UI state
     $scope.stateModel = stateModel;
@@ -72,6 +75,16 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
     };
     $scope.reset();
 
+    $scope.isBusy = function()
+    {
+      return $scope.stateModel.current.transient.busy;
+    }
+
+    $scope.canEdit = function()
+    {
+      return !$scope.stateModel.current.transient.busy;
+    }
+
     // persist current ui state
     $scope.$watch('stateModel.current.accordion[0].open', function(isOpen) {
         $scope.stateModel.save_state();
@@ -86,7 +99,7 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
     };
 
     $scope.actionButtonClicked = function() {
-      if ($scope.stateModel.current.transient.busy)
+      if ($scope.isBusy())
       {
         // cancel
         $scope.stateModel.current.transient.cancel = true;
@@ -201,6 +214,27 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
       $scope.msg = data;
     });
 
+    $scope.addFolder = function () {
+      // insert a new row
+      $scope.stateModel.current.folders.unshift({"enabled": true, "path": ''});
+
+      // now set focus to that new cell (after the menu collapses)
+      $timeout(function() {
+        $scope.gridOptionsFolders.gridApi.cellNav.scrollToFocus(
+          $scope.stateModel.current.folders[0],
+          $scope.gridOptionsFolders.columnDefs[0]);
+      }, 0);
+    }
+
+    $scope.deleteFolder = function () {
+      var rowCol = $scope.gridOptionsFolders.gridApi.cellNav.getFocusedCell();
+      if(rowCol !== null) {
+        // delete the current row
+        var index = $scope.stateModel.current.folders.indexOf(rowCol.row.entity);
+        $scope.stateModel.current.folders.splice(index, 1);
+      }
+    }
+
     $scope.gridOptionsAssets = {
       enableSorting: true,
       showColumnFooter: true,
@@ -221,7 +255,13 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
     $scope.gridOptionsFolders = {
       enableSorting: true,
       columnDefs: [
-        { name: 'path' }
+        {
+          name: 'path',
+          field: 'path',
+          enableCellEdit: true,
+          enableCellEditOnFocus: true,
+          cellEditableCondition : $scope.canEdit
+        }
       ],
       data: "stateModel.current.folders",
       onRegisterApi: function(gridApi){

@@ -45,6 +45,22 @@ angular.module('myApp.view1')
         });
     };
 
+    this_.restoreDefaultFolders = function(cb) {
+      this_.get_default_folders(function(err, default_folders) {
+        if (!err)
+        {
+          this_.current.folders = [];
+          default_folders.forEach(function(ext) {
+            this_.current.folders.push({"enabled": true, "path": ext.path});
+          });
+        }
+        if (cb)
+        {
+          cb(err, this_.current.folders);
+        }
+      });
+    };
+
     /**
      * load state from local storage, or create defaults
     */

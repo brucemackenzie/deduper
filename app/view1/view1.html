@@ -12,13 +12,13 @@
               <div class="col-md-4">
                 <div class="row">
                 <button type="button" class="btn scanButton btn-lg pull-right"
-                  ng-class="stateModel.current.transient.busy ? 'btn-danger':'btn-primary'"
-                  ng-click="actionButtonClicked()">{{ stateModel.current.transient.busy ? 'Cancel' : 'Scan' }}</button>
+                  ng-class="isBusy() ? 'btn-danger':'btn-primary'"
+                  ng-click="actionButtonClicked()">{{ isBusy() ? 'Cancel' : 'Scan' }}</button>
                 </div>
                 <div class="row">
                   <button type="button" class="btn otherButton btn-lg btn-warning pull-right"
                    ng-click="resetButtonClicked()"
-                   ng-disabled="stateModel.current.transient.busy">Reset</button>
+                   ng-disabled="isBusy()">Reset</button>
                 </div>
               </div>
             </div>
@@ -33,7 +33,7 @@
             </div>
             <div class="row">
               <div class="col-md-12">
-                <uib-accordion close-others="false">
+                <uib-accordion close-others="true">
                     <uib-accordion-group is-open="stateModel.current.accordion[0].open">
                       <uib-accordion-heading>
                         <i class="glyphicon" ng-class="{'glyphicon-chevron-up': stateModel.current.accordion[0].open, 'glyphicon-chevron-down': !stateModel.current.accordion[0].open}"></i>&nbsp;Search Settings
@@ -52,11 +52,23 @@
                           <div class="panel panel-default">
                             <div class="panel-heading">Search Folders</div>
                             <div class="panel-body">
-                                <div ui-grid-selection id="grid3" ui-grid="gridOptionsFolders" class="folderGrid"></div>
+                            <div>
+                              <button type="button" class="btn btn-md pull-right btn-primary"
+                                  ng-disabled="isBusy()"
+                                  ng-click="stateModel.restoreDefaultFolders()">Defaults</button>
+                              <button type="button" class="btn btn-md pull-right btn-primary"
+                                  ng-disabled="isBusy()"
+                                  ng-click="deleteFolder()">Delete</button>
+                              <button type="button" class="btn btn-md pull-right btn-primary"
+                                ng-disabled="isBusy()"
+                                ng-click="addFolder()">Add</button>
                             </div>
                           </div>
+                          <div ui-grid-selection ui-grid-edit ui-grid-cellnav id="grid3" ui-grid="gridOptionsFolders" class="folderGrid"></div>
                         </div>
                       </div>
+                    </div>
+
                     </uib-accordion-group>
                     <uib-accordion-group is-open="stateModel.current.accordion[1].open">
                       <uib-accordion-heading>
