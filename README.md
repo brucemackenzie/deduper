@@ -1,9 +1,19 @@
 # deduper (**work in progress**)
 Python file deduplication utility with an AngularJS front-end
 
+## compatibility
+Currently only tested/enabled on Windows with Python 2.7.11+
+
+## usage
+1. clone from github repo
+2. navigate to root of repo
+3. npm start
+
 ## TODO
 |feature|details|expected effort|
 |-------|-------|-------|
+|Setup|Determine all dependencies for clean-machine install|medium|
+|Python 3.x|Verify compatibility with Python 3.x|small|
 |Messages|Create/Display messages in a uniform fashion|small|
 |Thumbnails|Better UI representation for duplicates|medium|
 |Unit Tests|Validate duplicate detection and stats|medium|
