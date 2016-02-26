@@ -237,17 +237,11 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
 
     $scope.gridOptionsAssets = {
       enableSorting: true,
-      showColumnFooter: true,
       columnDefs: [
         { name: 'date',
           cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{{row.entity.date | prettyDate}}</div>' },
-        { name: 'path', type: 'string',
-          aggregationType: uiGridConstants.aggregationTypes.count
-        },
-        {
-          name: 'size', type: 'number',
-          aggregationType: uiGridConstants.aggregationTypes.sum
-        }
+        { name: 'path', type: 'string' },
+        { name: 'size', type: 'number' }
       ],
       data: "assetsModel.data"
     };
