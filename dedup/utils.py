@@ -7,7 +7,7 @@ generate the filesizes for every matching file
 example: ['jpg', 'bmp', 'png', 'gif']
 """
 def scan(rootdir, extensions):
-  for path, dirs, files in walk( unicode(rootdir) ):
+  for path, dirs, files in walk( str(rootdir) ):
     # restrict to filenames that match current extensions
     file_names = [fn for fn in files
       if any(fn.lower().endswith(ext) for ext in extensions)]

@@ -11,7 +11,7 @@ Get the list of interesting folders
 class Folders(object):
     def __init__(self):
       CSIDLs = ["mypictures", "common_pictures", "myvideo", "common_video", "personal"]
-      self.folders_ = map(lambda name: {"name": name, "path": winshell.folder(name)}, CSIDLs)
+      self.folders_ = [{"name": name, "path": winshell.folder(name)} for name in CSIDLs]
 
     exposed = True
 

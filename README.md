@@ -2,8 +2,14 @@
 Python file deduplication utility with an AngularJS front-end
 
 ## compatibility
-Currently only tested/enabled on Windows with Python 2.7.11+.
-Note that setup is not currently simplified so there will likely be unexpected failures during npm start/exection.
+Currently only tested/enabled on Windows with Python 3.5+
+Note that setup is not currently simplified so there will likely be unexpected failures during npm start/exection if you do not install the correct python dependencies (see below)
+
+## setup
+install Python: https://www.python.org/downloads/windows
+pip install pypiwin32
+pip install winshell
+pip install cherrypy
 
 ## usage
 1. clone from github repo
@@ -14,7 +20,6 @@ Note that setup is not currently simplified so there will likely be unexpected f
 |feature|details|expected effort|
 |-------|-------|-------|
 |Setup|Determine all dependencies for clean-machine install|medium|
-|Python 3.x|Verify compatibility with Python 3.x|small|
 |Messages|Create/Display messages in a uniform fashion|small|
 |Thumbnails|Better UI representation for duplicates|medium|
 |Unit Tests|Validate duplicate detection and stats|medium|
@@ -28,6 +33,7 @@ Note that setup is not currently simplified so there will likely be unexpected f
 |feature|details|date|
 |-------|-------|-------|
 |Custom paths|Add/Remove/Edit folder search paths|2/20/2016|
+|Python 3.x|Verify compatibility with Python 3.x. Abandoned 2.7 support.|2/25/2016|
 
 ## dependencies
 |library| usage | site | version
