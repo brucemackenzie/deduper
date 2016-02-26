@@ -2,14 +2,13 @@
 Python file deduplication utility with an AngularJS front-end
 
 ## compatibility
-Currently only tested/enabled on Windows with Python 3.5+
-Note that setup is not currently simplified so there will likely be unexpected failures during npm start/exection if you do not install the correct python dependencies (see below)
+Currently only tested/enabled on Windows 10+ with Python 3.5+
 
 ## setup
-install Python: https://www.python.org/downloads/windows
-pip install pypiwin32
-pip install winshell
-pip install cherrypy
+1. install Python: https://www.python.org/downloads/windows
+2. pip install pypiwin32
+3. pip install winshell
+4. pip install cherrypy
 
 ## usage
 1. clone from github repo
