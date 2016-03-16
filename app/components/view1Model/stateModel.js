@@ -49,7 +49,8 @@ angular.module('myApp.view1')
       this_.get_default_folders(function(err, default_folders) {
         if (!err)
         {
-          this_.current.folders = [];
+          // this change is not detected by angularjs: this_.current.folders = [];
+          this_.current.folders.splice(0,this_.current.folders.length);
           default_folders.forEach(function(ext) {
             this_.current.folders.push({"enabled": true, "path": ext.path});
           });
