@@ -5,6 +5,7 @@ import winshell
 
 from dedup import utils
 
+
 """
 Get the list of interesting folders
 """
@@ -19,39 +20,25 @@ class Folders(object):
     def GET(self):
         return self.folders_
 
-class Scan(object):
+# cache of generators
+generators = {}
+
+class Continue(object):
   # TODO: accept override value as query param
   chunk_size = 100    # return 100 hits at a time
-
-  # cache of generators
-  generators = {}
 
   def __init__(self):
     pass
 
   exposed = True
 
-  # POST starts the scan process by accepting extensions
-  # and returning the iteratorid to use in subsequent GET calls
-  @cherrypy.tools.json_in()
-  @cherrypy.tools.json_out()
-  def POST(self, root):
-    # generate a new one
-    extensions = cherrypy.request.json
-    iterator = utils.scan(root, extensions)
-    iteratorid = str(id(iterator))
-    self.generators[iteratorid] = iterator
-
-    # return iteratorid on first call
-    return {"iteratorid": iteratorid}
-
   # must be called with an interator ID returned from a previous POST call
   @cherrypy.tools.json_out()
   def GET(self, iteratorid):
 
     # iteratorid provided - retrieve the iterator
-    if iteratorid in self.generators:
-      iterator = self.generators[iteratorid]
+    if iteratorid in generators:
+      iterator = generators[iteratorid]
     else:
       raise cherrypy.HTTPError(400)
 
@@ -67,9 +54,35 @@ class Scan(object):
     if not len(result):
       # content exhausted
       # discard the single-use generator
-      del self.generators[iteratorid]
+      del generators[iteratorid]
 
     return result
+
+class Scan(object):
+  # TODO: accept override value as query param
+  chunk_size = 100    # return 100 hits at a time
+
+  # cache of generators
+  generators = {}
+
+  def __init__(self):
+    pass
+
+  exposed = True
+
+  # PUT starts the scan process by accepting extensions
+  # and returning the iteratorid to use in subsequent GET calls
+  @cherrypy.tools.json_in()
+  @cherrypy.tools.json_out()
+  def PUT(self, root):
+    # generate a new one
+    extensions = cherrypy.request.json
+    iterator = utils.scan(root, extensions)
+    iteratorid = str(id(iterator))
+    generators[iteratorid] = iterator
+
+    # return iteratorid on first call
+    return {"iteratorid": iteratorid}
 
 class Digest(object):
   exposed = True
@@ -91,6 +104,7 @@ class Digest(object):
 class Root(object):
   folders = Folders()
   scan = Scan()
+  scan.__dict__["continue"] = Continue()
   digest = Digest()
 
 if __name__ == '__main__':

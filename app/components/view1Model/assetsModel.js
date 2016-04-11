@@ -19,7 +19,7 @@ angular.module('myApp.view1')
     // get the known file state
     this_.update = function (root, callback) {
       var more = function (id, cb) {
-        $http.get('/scan?iteratorid=' + id).then(
+        $http.get('/scan/continue?iteratorid=' + id).then(
           function success(result) {
 
             // recurse until resource is exhausted
@@ -74,8 +74,8 @@ angular.module('myApp.view1')
       };
 
       // incrementally obtain more file details
-      var postUrl = '/scan?root=' + root;
-      $http.post(postUrl, this_.stateModel.get_enabled_extensions()).then(
+      var putUrl = '/scan?root=' + encodeURI(root);
+      $http.put(putUrl, this_.stateModel.get_enabled_extensions()).then(
         function success(id_result) {
           var id = id_result.data['iteratorid'];
           more(id, function (err) {
