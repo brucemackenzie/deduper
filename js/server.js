@@ -134,11 +134,7 @@ server.get('/scan/continue', function (req, res, next) {
   var results = [];
 
   var iterator = server.state.generators[req.params.iteratorid];
-  if (!iterator)
-  {
-    res.send(400, 'unknown iteratorid or iterator exhausted');
-  }
-  else
+  if (iterator)
   {
     for (var i = 0; i < server.state.chunk_size; i++)
     {
@@ -155,7 +151,9 @@ server.get('/scan/continue', function (req, res, next) {
     }
   }
 
+  // iterator or exhausted - same answer
   res.send(200, results);
+
   return next();
 });
 
@@ -188,6 +186,21 @@ server.get('/folders', function (req, res, next) {
   return next();
 });
 
+server.get('/image/:path', function(req, res, next) {
+  // try to open the file and stream it back
+  try
+  {
+    var name = req.params.path;
+    fs.createReadStream(name).pipe(res);
+  }
+  catch(e)
+  {
+    res.send(400, req.params.path);
+  }
+
+  return next();
+});
+
 server.on('InternalServer', function (req, res, err, cb) {
   err.body = 'something is wrong!';
   return cb();
@@ -199,8 +212,17 @@ server.get(/\/?.*/, restify.serveStatic({
   default: 'index.html'
 }));
 
-//server.opts('/\.*/', corsHandler, optionsRoute);
+// only accept local requests because we are serving up local files without restriction
+server.pre(function(req, res, next) {
+  var ip = req.ip || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress;
+  if (ip != '127.0.0.1' && ip != "localhost") 
+  {
+    return res.end();
+  }
+  return next();
+});
 
-server.listen(8080, function () {
+// force ipv4
+server.listen(8080, "127.0.0.1", function () {
   console.log('%s listening at %s', server.name, server.url);
 });

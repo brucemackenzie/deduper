@@ -11,9 +11,8 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
 }])
 .filter('prettyDate', function() {
   return function(input) {
-    // convert to date object
-    var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
-    d.setUTCSeconds(input);
+    // convert seconds to date object
+    var d = new Date(input);
     return d.toISOString();
   };
 })
