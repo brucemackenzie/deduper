@@ -162,8 +162,9 @@ server.get('/scan/continue', function (req, res, next) {
 server.post('/digest', function (req, res, next) {
   // digest the resources defined by the given paths
   var paths = req.body;
+  var limit = 10; // simultaneous digests
 
-  async.map(paths,
+  async.mapLimit(paths, limit,
     function(item, callback) {
       try
       {
