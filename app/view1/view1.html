@@ -3,7 +3,7 @@
     <div class="row">
       <div class="col-md-12">
         <div class="row">
-          <div class="col-md-6">
+          <div class="col-md-4">
             <div class="row">
               <div class="col-md-8">
                 <h1>Deduper</h1>
@@ -72,11 +72,24 @@
                     </uib-accordion-group>
                     <uib-accordion-group is-open="stateModel.current.accordion[1].open">
                       <uib-accordion-heading>
-                        <i class="glyphicon" ng-class="{'glyphicon-chevron-up': stateModel.current.accordion[1].open, 'glyphicon-chevron-down': !stateModel.current.accordion[1].open}"></i>&nbsp;Files Found
+                        <i class="glyphicon" ng-class="{'glyphicon-chevron-up': stateModel.current.accordion[1].open, 'glyphicon-chevron-down': !stateModel.current.accordion[1].open}"></i>&nbsp;Analysis
                       </uib-accordion-heading>
                       <div class="row">
                         <div class="col-md-12">
-                          <div id="grid2" ui-grid="gridOptionsAssets" class="myGrid" ui-grid-resize-columns></div>
+                          <table class="table">
+                             <tbody>
+                              <tr><td>files:</td><td>{{assetsModel.data.length}} <span ng-hide="assetsModel.totalBytes < 1">({{assetsModel.totalBytes | asUnit}})</span></td></tr>
+                              <tr><td>analyzed:</td><td>{{digestsModel.digestedCount}}</td></tr>
+                              <tr><td>duplicates:</td><td>{{analysis.duplicateCount}}</td></tr>
+                              <tr><td>duplicated data:</td><td>{{analysis.duplicateBytes | asUnit}} <span ng-hide="analysis.percentDuplicated < 1">({{analysis.percentDuplicated}}%)</span></td></tr>
+                            </tbody>
+                          </table>
+                          <uib-progress ng-hide="assetsModel.data.length == 0">
+                            <uib-bar value="analysis.percentDuplicated" type="{{analysis.percentDuplicated > 50 ? 'danger':'warning' }}">
+                              <span ng-hide="analysis.percentDuplicated < 5">{{analysis.percentDuplicated}}%</span></uib-bar>
+                            <uib-bar value="100 - analysis.percentDuplicated" type="success">
+                              <span ng-hide="100 - analysis.percentDuplicated < 5"></span></uib-bar>
+                          </uib-progress>
                         </div>
                       </div>
                     </uib-accordion-group>
@@ -84,32 +97,19 @@
               </div>
             </div>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-8">
             <div class="panel panel-default">
               <div class="panel-heading">Findings</div>
               <div class="panel-body">
-                <div class="row">
-                  <div class="col-md-12">
-                    <table class="table">
-                       <tbody>
-                        <tr><td>files:</td><td>{{assetsModel.data.length}} <span ng-hide="assetsModel.totalBytes < 1">({{assetsModel.totalBytes | asUnit}})</span></td></tr>
-                        <tr><td>analyzed:</td><td>{{digestsModel.digestedCount}}</td></tr>
-                        <tr><td>duplicates:</td><td>{{analysis.duplicateCount}}</td></tr>
-                        <tr><td>duplicated data:</td><td>{{analysis.duplicateBytes | asUnit}} <span ng-hide="analysis.percentDuplicated < 1">({{analysis.percentDuplicated}}%)</span></td></tr>
-                      </tbody>
-                    </table>
-                    <uib-progress ng-hide="assetsModel.data.length == 0">
-                      <uib-bar value="analysis.percentDuplicated" type="{{analysis.percentDuplicated > 50 ? 'danger':'warning' }}">
-                        <span ng-hide="analysis.percentDuplicated < 5">{{analysis.percentDuplicated}}%</span></uib-bar>
-                      <uib-bar value="100 - analysis.percentDuplicated" type="success">
-                        <span ng-hide="100 - analysis.percentDuplicated < 5"></span></uib-bar>
-                    </uib-progress>
-                  </div>
-                </div>
                 <div class="row" ng-hide="analysis.duplicateCount == 0">
                   <div class="col-md-6">
                     <h3>Duplicates</h3>
                     <div id="grid4"  ui-grid-selection ui-grid="gridOptionsDuplicates" class="myGrid"></div>
+
+                        <h3>Paths</h3>
+                        <div ng-repeat="path in selectedDuplicate.paths">
+                          {{path}}
+                        </div>
                   </div>
                   <div class="col-md-6">
                     <div id="carousel" style="height:100%">
@@ -122,14 +122,6 @@
                           </div>
                         </uib-slide>
                       </uib-carousel>
-                    </div>
-                  </div>
-                </div>
-                <div class="row" ng-hide="analysis.duplicateCount == 0">
-                  <div class="col-md-12">
-                    <h3>Paths</h3>
-                    <div ng-repeat="path in selectedDuplicate.paths">
-                      {{path}}
                     </div>
                   </div>
                 </div>

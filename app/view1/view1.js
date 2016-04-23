@@ -185,6 +185,19 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
           $scope.duplicates.push(dup);
           $scope.analysis.duplicateCount += 1;
           $scope.analysis.duplicateBytes += size;
+
+          // hack to force grid column width to be calculated
+          if ($scope.duplicates.length === 1)
+          {
+            $timeout(function() {
+              // select first item
+              var row = $scope.gridOptionsDuplicates.gridApi.grid.rows[0];
+              $scope.gridOptionsDuplicates.gridApi.selection.selectRow(row.entity);
+
+              // force redraw
+              window.dispatchEvent(new Event('resize'));
+            }, 100);
+          }
         }
 
         // update stats
@@ -355,14 +368,29 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
 
     var sortUnits = function(a, b, rowA, rowB, direction) {
       if ( !a && !b ) {
-         return null;
+         return 0;
       }
       else {
-        if (direction == 'asc') {
-          return a < b;
+        if (a == b)
+        {
+          return 0;
+        }
+        else if (direction == 'asc') {
+          if (a < b)
+          {
+            return -1;
+          }
+          else {
+            return 1;
+          }
         }
         else {
-          return b < a;
+          if (b < a) {
+            return -1;
+          }
+          else {
+            return 1;
+          }
         }
       }
     }
@@ -373,11 +401,11 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
       multiSelect: false,
       enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
       columnDefs: [
-        { name: 'count',
+        { name: 'count', width: 60,
           cellTemplate: '<div class="ui-grid-cell-contents text-right">{{row.entity.paths.length}}</div>'},
-        { name: 'size', sortingAlgorithm:sortUnits,
+        { name: 'size', sortingAlgorithm:sortUnits, width: '40%',
           cellTemplate: '<div class="ui-grid-cell-contents text-right">{{row.entity.size | asUnit}}</div>'},
-        { name: 'total', sortingAlgorithm:sortUnits,
+        { name: 'total', sortingAlgorithm:sortUnits,width: '40%',
           cellTemplate: '<div class="ui-grid-cell-contents text-right">{{row.entity.size * row.entity.paths.length | asUnit}}</div>'}
       ],
       data: "duplicates",
