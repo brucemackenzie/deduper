@@ -26,7 +26,6 @@ http://localhost:8080/#/view1
 ## TODO
 |feature|details|expected effort|
 |-------|-------|-------|
-|Thumbnails|Better UI representation for duplicates|medium|
 |Cloud|Support s3 as a file source|medium|
 |Setup|Determine all dependencies for clean-machine install|medium|
 |Messages|Create/Display messages in a uniform fashion|small|
@@ -40,6 +39,7 @@ http://localhost:8080/#/view1
 ## Completed
 |feature|details|date|
 |-------|-------|-------|
+|Thumbnails|Better UI representation for duplicates|4/22/2016|
 |File Server|Serve local image files for thumbnails|4/11/2016|
 |Custom paths|Add/Remove/Edit folder search paths|2/20/2016|
 |Python 3.x|Verify compatibility with Python 3.x. Abandoned 2.7 support.|2/25/2016|

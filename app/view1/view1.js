@@ -42,7 +42,7 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
     }
 
     // return appropriate string
-    return (input/scale.val).toFixed(1) + scale.unit;;
+    return (input/scale.val).toFixed(1) + ' ' + scale.unit;;
   };
 })
 .controller('View1Ctrl', ['$rootScope', '$scope', '$timeout',
@@ -180,7 +180,9 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
         else
         {
           // new item
-          $scope.duplicates.push(duplicate);
+          var dup = JSON.parse(JSON.stringify(duplicate));
+          dup.size = size;
+          $scope.duplicates.push(dup);
           $scope.analysis.duplicateCount += 1;
           $scope.analysis.duplicateBytes += size;
         }
@@ -233,6 +235,31 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
         $scope.stateModel.current.folders.splice(index, 1);
       }
     }
+
+    $scope.myInterval = 2000;
+    $scope.noWrapSlides = true;
+    $scope.slides = $scope.slides = [];
+    $scope.currIndex = 0;
+
+    $scope.addSlide = function(localPath) {
+      var encoded = encodeURIComponent(localPath);
+      $scope.slides.push({
+        image: 'http://127.0.0.1:8080/image/' + encoded,
+        text: localPath,
+        id: $scope.currIndex++
+      });
+    };
+
+    $scope.duplicateSelected = function(dup) {
+      $scope.slides.splice(0, $scope.slides.length);
+      $scope.currIndex = 0;
+      $scope.selectedDuplicate = dup;
+      dup.paths.forEach(
+        function(localPath) {
+          $scope.addSlide(localPath);
+        }
+      );
+    };
 
     $scope.gridOptionsAssets = {
       enableSorting: true,
@@ -324,13 +351,43 @@ angular.module('myApp.view1', ['ngRoute', 'ngResource', 'webStorageModule',
       }
     };
 
+    $scope.selectedDuplicate = null;
+
+    var sortUnits = function(a, b, rowA, rowB, direction) {
+      if ( !a && !b ) {
+         return null;
+      }
+      else {
+        if (direction == 'asc') {
+          return a < b;
+        }
+        else {
+          return b < a;
+        }
+      }
+    }
+
     $scope.gridOptionsDuplicates = {
       enableSorting: true,
-      showColumnFooter: true,
+      enableSelection: true,
+      multiSelect: false,
+      enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
       columnDefs: [
-        { name: 'paths' }
+        { name: 'count',
+          cellTemplate: '<div class="ui-grid-cell-contents text-right">{{row.entity.paths.length}}</div>'},
+        { name: 'size', sortingAlgorithm:sortUnits,
+          cellTemplate: '<div class="ui-grid-cell-contents text-right">{{row.entity.size | asUnit}}</div>'},
+        { name: 'total', sortingAlgorithm:sortUnits,
+          cellTemplate: '<div class="ui-grid-cell-contents text-right">{{row.entity.size * row.entity.paths.length | asUnit}}</div>'}
       ],
-      data: "duplicates"
+      data: "duplicates",
+      onRegisterApi: function(gridApi) {
+        $scope.gridOptionsDuplicates.gridApi = gridApi;
+
+        gridApi.selection.on.rowSelectionChanged($scope, function(row){
+          $scope.duplicateSelected(row.entity);
+        });
+      }
     };
 
     // restore UI state from local storage
