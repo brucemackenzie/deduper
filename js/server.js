@@ -78,7 +78,7 @@ function makeIterator(root, extensions){
         {
           // apply extension filter
           // ignore the leading '.' in ''.jpg'
-          var ext = path.extname(file).substr(1);
+          var ext = path.extname(file).substr(1).toLowerCase();
           if (extensions.indexOf(ext) >= 0)
           {
             var dt = new Date(stat.mtime);
